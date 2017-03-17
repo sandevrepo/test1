@@ -1,0 +1,150 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" 
+	href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css"> 
+    <script type="text/javascript" 
+	src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script type="text/javascript" 
+	src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+
+			var toStoreId = 6000;
+			var fromStoreId = 1;
+			var getItemDetails = true;
+			var storesearchloc = "http://search.mobile.walmart.com/search?query=";
+			var itemid = "";
+			var itemname = "";
+			var upc = "";
+			var itemimage = "";
+			
+			var sno = 0;
+			
+            var dt = $('#myTable').DataTable({
+				"order": [[ 3, "asc" ]]
+			});
+
+            $("#btnSubmit").click(function() {					
+				itemid = $("#searchitemid").val();
+				
+				for(var i=fromStoreId; i<toStoreId; i++){
+					search(i);				
+				}
+				
+            });
+			
+			
+            function search(storeid) {
+                //var storeid = i;
+                var storesearchurl = storesearchloc + itemid + "&store=" + storeid;			
+				
+                $.ajax({
+                    method: "GET",
+                    url: storesearchurl,
+                    dataType: "json",
+                    success: function(data) {
+                        //console.log(data);
+                        console.log("store id: " + storeid + " count: " + data.count);
+                        
+                        if (data.count > 0) {
+                            sno++;
+                            //var sno1 = sno;
+							
+                            //ar itemname = JSON.stringify(data.results[0].name).replace(/"/g, "");
+							//if(getItemDetails){
+							//	itemname = data.results.name; //.replace(/"/g, "");
+							//	upc = "00" + data.results[0].productId.upc.replace(/"/g, "");
+							//	itemimage = data.results[0].images.thumbnailUrl.replace('\"', '');
+							//	getItemDetails = false;
+							//}
+                            
+							//var storeitemid = data.results[0].productId.WWWItemId.replace(/"/g, "");
+							var storeprice = 10000;
+							var priceCents = data.results[0].price.priceInCents;
+							if(!isNaN(priceCents) && priceCents != "" && priceCents != null && priceCents != 'undefined'){
+								storeprice = ((data.results[0].price.priceInCents)/100).toFixed(2);
+							}
+														
+							var storequantity = data.results[0].inventory.quantity;
+
+							//var wwwurl = "http://www.walmart.com" + data.results[0].walmartCanonicalUrl.replace(/"/g, "");
+
+
+                            
+                            var storeurl = "https://www.walmart.com/store/" + storeid + "/search?query=" + itemid;
+
+                            console.log(storeurl);
+                            //$("#storeurl").html(storeurl);
+                            //$("#storeurl").attr('href', storeurl);
+
+                            //$("#wwwurl").html(wwwurl);
+                            //$("#wwwurl").attr('href', wwwurl);
+
+                            //var rowcontent = "<tr><td>" + sno1 + "</td><td><a href=\"" + storeurl + "\" target=\"_blank\">" + storeurl + "</a></td><td>" + storequantity + "</td><td>" + storeprice + "</td></tr>";
+
+							
+							dt.row.add([sno, "<a href=\"" + storeurl + "\" target=\"_blank\">" + storeurl + "</a>", storequantity, storeprice])
+                            
+							dt.draw();                     
+                        }
+
+                    },
+                    error: function(ex) {
+                        console.log("No Data: " + ex.message);						
+                    }
+                });
+
+
+            }
+
+
+        });
+
+    </script>
+
+</head>
+<body>
+
+
+
+
+<div id="form">
+    
+<label>Item ID</label> <input type="text" name="item" id="searchitemid" required/><br/>     
+
+        <button type="button" id="btnSubmit">Submit</button>    
+</div>
+
+<div id="result">
+    <ul ><li id="itemInfo"></li></ul>
+    <table class="display" cellspacing="0" width="100%" id="myTable">
+        <thead id="headings">
+        <tr>
+            <th>Sno</th>
+            <th>Store Item URL</th>
+            <th>Quantity</th>
+            <th>Store Price</th>
+
+        </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th>Sno</th>
+                <th>Store Item URL</th>
+                <th>Quantity</th>
+                <th>Store Price</th>
+
+            </tr>
+        </tfoot>
+        <tbody></tbody>
+    </table>
+
+
+
+</div>
+
+</body>
+</html>
+
